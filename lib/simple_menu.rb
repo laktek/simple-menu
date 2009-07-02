@@ -6,22 +6,21 @@ end
 
 module SimpleMenu 
   module MenuHelper
-
       def menu_tag(name, options = {}, &block)
         options[:id] = name.to_s unless options[:id]
         seperator = options.delete(:seperator) || ""
         
-        content_tag(:ul, options) do
-          menu_object = MenuBuilder.new(@current_tab)
-          yield(menu_object)
+        menu_object = MenuBuilder.new(@current_tab)
+        output_menu = capture { block.call(menu_object) } || ""
 
-          menu_object.items.map do |item|
-            link = link_to(item.delete(:link_text), item.delete(:link_url))         
-            link = "#{link} #{seperator}" unless menu_object.items.last?(item)
+        menu_object.items.map do |item|
+          link = link_to(item.delete(:link_text), item.delete(:link_url), item.delete(:link_options))         
+          link = "#{link} #{seperator}" unless menu_object.items.last?(item)
 
-            content_tag(:li, link, item)
-          end
+          output_menu << content_tag(:li, link, item)
         end
+
+        concat content_tag(:ul, output_menu, options)    
       end
 
 
